@@ -1,0 +1,235 @@
+# Gestion des doublons et valeurs manquantes
+
+## Gestion des doublons
+
+Lorsque nous travaillons avec des données, il n'est pas rare d'avoir affaire à des doublons, c'est-à-dire des enregistrements qui répètent les mêmes informations. La présence de doublons peut rendre nos analyses moins fiables, car ils peuvent fausser les résultats.
+
+La détection et suppression des doublons est donc une étape importante de la préparation des données, qui doit être réalisée avant toute analyse.
+
+Une fois que nous avons détecté les doublons, nous pouvons les supprimer avant de continuer nos analyses.
+
+Il est important de documenter le processus de détection et de suppression des doublons afin de pouvoir reproduire les résultats à tout moment et de s'assurer de la qualité des données utilisées pour les analyses.
+
+Le code suivant permet de générer les données sur lesquelles nous allons travailler.
+
+```{r}
+(df <- data.frame(
+  Prenom   = c(rep('Jean',3), rep("Alain", 2)), 
+  Activite = c(rep('Foot',3), rep("Danse", 2)), 
+  Lieu     = c(rep('Kinshasa',3), rep("Goma", 2)), 
+  Date     = as.Date(c("2023-05-12", "2023-05-16", "2023-05-14", "2023-05-17", "2023-05-13"))
+                  ))
+
+```
+
+### Détection des doublons
+
+La fonction `duplicated` permet de détecter les doublons sur toutes les colonnes d'un tableau de données. On peut cependant lui fournir un tableau de données ne contenant que les variables sur lesquelles baser la recherche.
+
+Cette fonction retourne `TRUE` si la ligne est un doublon et `FALSE` dans le cas contraire. Ici, nous cherchons les doublons sur les trois premières colonnes.
+
+```{r}
+duplicated(df[, - 4])
+```
+
+On peut ajouter `which()` à la fonction précédente pour retourner les numéros des lignes qui sont des doublons.
+
+```{r}
+which(duplicated(df[, - 4]))
+```
+
+Le code suivant permet d'afficher les doublons détectés dans notre tableau de données.
+
+```{r}
+dup <- which(duplicated(df[, - 4]))
+
+df[dup, ]
+```
+
+### Suppression des doublons
+
+#### `duplicated`
+
+Pour supprimer les doublons, il suffit d'ajouter le signe négatif à l'objet qui contient les lignes de doublons.
+
+```{r}
+dup <- which(duplicated(df[, - 4]))
+df[-dup, ]
+```
+
+#### `distinct`
+
+`distinct` fait partie des focntions du package`dplyr` et permet de supprimer les doublons en ne retournant que les observations distinctes.
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+```
+
+```{r}
+df %>% 
+  distinct(Prenom, Activite, Lieu, .keep_all = T)
+```
+
+L'argument `.keep_all = T` permet de garder toutes les colonnes dans le résultat.
+
+### Retenir les observations par rapport à une date
+
+Il arrive qu'on ait besoin de retenir les observations, non pas par rapport à leur ordre dans le tableau de données, mais par rapport à une autre variable (une date par exemple).
+
+Pour ce faire, nous devons d'abord grouper les observations selon la/les variable(s) clés, puis les trier selon la variable contenant le date. Une fois les données triées, nous pouvons sélectionner les premières ou les dernières observations.
+
+Le code suivant permet de retenir les observations dont la date est la plus ancienne
+
+```{r}
+# Grouper et Trier par ordre croissant 
+df_cr <- df %>% 
+  group_by(Prenom, Activite, Lieu) %>% 
+  arrange(Date) 
+
+df_cr %>% 
+  distinct(Prenom, Activite, Lieu, .keep_all = T)
+```
+
+Ici, nous retenons les observations avec la date la plus récente.
+
+```{r}
+# Grouper et Trier par ordre décroissant
+df_dec <- df %>% 
+  group_by(Prenom, Activite, Lieu) %>% 
+  arrange(desc(Date)) 
+
+df_dec %>% 
+  distinct(Prenom, Activite, Lieu, .keep_all = T)
+```
+
+Nous pouvons aussi utiliser la fonction `slice` sur le tableau de données groupées et triées comme suit.
+
+```{r}
+df_dec %>% 
+  slice(1)
+```
+
+Pour sauvegarder le tableau de données sans doublons, il faut l'affecter un à objet.
+
+
+## Gestion des valeurs manquantes
+
+Les données à analyser contiennent souvent des valeurs manquantes, c’est-à-dire des valeurs non renseignées pour une pour plusieurs variables.
+
+- Les valeurs peuvent fausser les analyses, car basées sur peu de données,
+
+- Certains algorithmes sont sensibles aux valeurs manquantes.
+
+Supprimer ou remplacer les valeurs manquantes ?
+
+La suppression peut réduire sensiblement le nombre d’observations et le remplacement peut négativement affecter la variance. 
+
+
+### Détecter les valeurs manquantes
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(haven)
+```
+
+```{r}
+telco <-  read_sav("data/telco_missing.sav")
+dim(telco)
+```
+
+Pour un vecteur
+
+- `is.na()` : détecte la présence des `NA` sur une colonne (vecteur),
+sum(is.na(vecteur)) : combiner avec `sum()`, pour connaître le nombre de valeurs manquantes
+
+```{r}
+head(is.na(telco$age), 50)
+```
+
+```{r}
+sum(is.na(telco$age))
+```
+
+Pour un data frame
+
+- `colSums(is.na(dataframe))` : détecte le nombre de valeurs manquantes sur toutes colonnes.
+
+```{r}
+colSums(is.na(telco))
+colSums(is.na(telco)) / nrow(telco)
+```
+
+
+### Supprimer les valeurs manquantes
+
+La première solution peut être de supprimer les valeurs manquantes. Préconisée lorsque les manquantes représentent une faible proportion.
+
+Pour un vecteur
+
+- `vecteur[!is.na(vecteur)]` ou `vecteur[complete.cases(vecteur)]`
+
+- Certaines fonctions comme mean() disposent de l’argument `na.rm = T` pour supprimer `NA` lors du calcul.
+
+```{r run = F}
+head(telco$age[!is.na(telco$age)], 50)
+```
+
+
+Pour un data frame
+
+- `na.omit(dataframe)`
+
+```{r}
+telco2 <- na.omit(telco)
+dim(telco2)
+```
+
+
+### Remplacer les valeurs manquants
+
+Une autre alternative est de remplacer les valeurs manquantes. 
+
+- On utilise souvent la moyenne ou la médiane. 
+
+- D’autres techniques existent… 
+
+Ici, nous remplaçons les valeurs maquantes par la moyenne.
+
+```{r}
+telco$age[is.na(telco$age)] <- mean(telco$age, na.rm = T)
+sum(is.na(telco$age))
+mean(telco$age)
+```
+
+
+Le code suivant permet de remplacer les valeurs manquantes par la médiane en utilisant la syntaxe de tidyverse.
+
+```{r}
+telco3 <- telco %>% 
+  mutate(new_income = ifelse(is.na(income), 
+                             median(income, na.rm = T),
+                             income)) 
+telco3
+
+telco3 %>% 
+  select(income, new_income) %>% 
+  filter(is.na(income))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

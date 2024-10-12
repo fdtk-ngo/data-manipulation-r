@@ -1,0 +1,335 @@
+# Manipulation de données avec dplyr
+
+La manipulation de données est l'une des compétences les plus importantes en science des données, car elle permet de nettoyer, transformer et regrouper des données brutes en des ensembles de données utiles et informatifs. R est un langage de programmation populaire pour la science des données qui offre une grande variété de fonctions et de packages pour effectuer ces tâches. De la sélection de colonnes spécifiques à la transformation de données en utilisant des fonctions personnalisées, en passant par la fusion de ensembles de données différents, la manipulation de données avec R est un art qui nécessite une bonne compréhension des outils adaptés. Dans ce chapitre, nous allons explorer les techniques de la manipulation de données avec R et quelques packages dont principalement `dplyr`.
+
+## Introduction au pipe (`%>%`)
+
+Quand on manipule un tableau de données, il est très fréquent d'enchaîner plusieurs opérations. On va par exemple extraire une sous-population avec `filter`, sélectionner des colonnes avec `select` puis trier selon une variable avec `arrange`, etc.
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+counties <- readRDS("data/counties.rds")
+```
+
+TRaditionnellement, nous pouvons écrire ceci :
+
+```{r}
+count(
+  ungroup(
+  slice_max(
+  summarize(
+    group_by(counties, state, metro), 
+    total_pop = sum(population)),
+  total_pop, n = 1)), 
+  metro)
+
+```
+
+Pour simplifier et améliorer la lisibilité du code, on va utiliser un opérateur, pipe. Le pipe se note `%>%`, et son fonctionnement est le suivant : si j'exécute expr `%>%` f, alors le résultat de l'expression expr, à gauche du pipe, sera passé comme premier argument à la fonction f, à droite du pipe, ce qui revient à exécuter `f(expr)`.
+
+Ainsi le premier code peut s'"crire comme suit, en utilisant le pipe :
+
+```{r}
+counties %>%
+  group_by(state, metro) %>%
+  summarize(total_pop = sum(population)) %>%
+  slice_max(total_pop, n = 1) %>%
+  ungroup() %>%
+  count(metro)
+```
+
+On voit bien ce code est plus clair, car les opérations sont écrites dans l'ordre naturelle.
+
+Les données (`counties`) que nous allons utiliser contiennent les comtés des différents Etats aux USA avec des différents indicateurs.
+
+## Les verbes de dplyr
+
+Manipuler les données avec dplyr se fait au moyen d'un certain nombre de verbes qui indique l'action à exécuter le tableau de données (data.frame/tibble). Toutes les fonctions que nous verons prennent un dataframe en entrée et retourne également un datafrme.
+
+### select
+
+Permet de sélectionner une ou plusieurs colonnes d'un tableau de donnée.
+
+```{r}
+counties %>%
+  # Selectionner 4 colonnes
+  select(state, county, population, poverty)
+```
+
+Les `:` permettent de sélectionner des colonnes qui se suivent.
+
+```{r}
+counties %>% 
+  select(metro : black)
+```
+
+La commande suivante permet de sélectionner les colonnes dont les noms commencent avec "in".
+
+```{r}
+counties %>% 
+  select(starts_with("in"))
+```
+
+On peut aussi utiliser `contains()` ou `ends_with()` pour sélectionner respectivement les colonnes qui contiennent ou se se terminent par une chaîne de caractère donnée. Des colonnes peuvent être exclues du résultat par le signe (-). On peut par exemple exclure les 6 premières colonnes.
+
+```{r results='hide'}
+counties %>% 
+  select(-c(1 : 6))
+```
+
+👉 Sélectionnez les colonnes dont les noms se terminent par "tion". Le résultat devrait ressembler à ça :
+
+```{r echo=FALSE}
+counties %>% 
+  select(ends_with("tion"))
+```
+
+### arrange
+
+Permet de trier une colonne selon un ordre donné.
+
+Par défaut, `arrange()` trie le résultat par ordre croissant.
+
+```{r}
+counties_selected <- counties %>%
+  select(region, state, county, public_work, population, private_work, women, citizens, work_at_home, walk, land_area)
+
+counties_selected %>%
+  arrange(public_work)
+```
+
+On peut obtenir le résultat par ordre décroissant avec la fonction `desc()` comme suit :
+
+```{r results='hide'}
+counties_selected %>%
+  # trier par ordre décroissant de 'public_work'
+  arrange(desc(public_work))
+```
+
+👉 Quelle est la comté avec la plus grande population et celle avec la petite populaion?
+
+```{r eval=FALSE, include=FALSE}
+counties_selected %>% 
+  arrange(desc(population))
+```
+
+```{r eval=FALSE, include=FALSE}
+counties_selected %>% 
+  arrange(population)
+```
+
+### filter
+
+Permet de sélectionner des lignes d'un dataframe selon une ou plusieurs conditions.
+
+La commande suivante permet de filtrer les comtés ayant une population supérieure à 1000000.
+
+```{r}
+counties_selected %>%
+  # filtrer les comtés avec une population sup à 1000000
+  filter(population > 1000000)
+```
+
+On peut combiner plusieurs conditions avec des opérateurs(\| pour OU, & et ',' pour ET, == pour l'égalité).
+
+```{r}
+counties_selected %>%
+  # filtrer les comtés avec une population sup à 1000000 à California
+  filter(population > 1000000, state == "California")
+```
+
+Plusieurs verbes peuvent être enchaînés avec le pipe.
+
+```{r}
+counties_selected %>%
+  filter(state == "Texas", population > 10000) %>%
+  arrange(desc(private_work))
+```
+
+### mutate
+
+Permet d'ajouter une nouvelle variable dans le dataframe. Elle est souvent utiliser pour créer une variable à partir sur base d'un calcul.
+
+La commande suivante permet créer une variable qui contient le nombre d'employés du secteur public `public_workers` à partir de `population` et `public_work`.
+
+```{r}
+counties_selected %>%
+  mutate(public_workers = population * public_work / 100)
+```
+
+On peut savoir la comté avec le plus grand nombre de d'employés du secteur public.
+
+```{r}
+counties_selected %>%
+  mutate(public_workers = public_work * population / 100) %>%
+  arrange(desc(public_workers)) %>% 
+  select(state, county, public_workers)
+```
+
+👉 Quelles sont les 5 comtés ayant la plus grande proportion des femmes ?
+
+```{r echo=FALSE}
+counties_selected %>% 
+  mutate(proportion_women = women / population) %>% 
+  arrange(desc(proportion_women)) %>% 
+  select(state, county, proportion_women) %>% 
+  head(5)
+```
+
+### count
+
+Permet de compter le nombre d'occurrence de valeurs d'une variable qualitative.
+
+Le code suivant permet de compter le nombre de comtés dans chaque région.
+
+```{r}
+counties_selected %>% 
+  count(region, sort = T)
+```
+
+`count()` dispose d'un argument `wt` qui permet de fournir une variable quantitative pour effectuer la somme. La commande suivante calcule la somme de la variable `citizens` pour chaque region.
+
+```{r}
+counties_selected %>% 
+  count(region, wt = citizens, sort = T)
+```
+
+Le nombre de personnes qui travaillent à la maison dans chaque état peut être obtenu avec la commande suivante :
+
+```{r}
+counties_selected %>% 
+  mutate(pop_work_at_home = population * work_at_home / 100) %>% 
+  count(state, wt = pop_work_at_home, sort = T)
+```
+
+👉 Calculer le nombre de personnes qui font la marche pour se rendre au travail.
+
+```{r echo=FALSE}
+counties_selected %>%
+  mutate(population_walk = population * walk / 100) %>%
+  count(state, wt = population_walk, sort = T)
+```
+
+### summarize
+
+Permet de calculer un sommaire sur une variable quantitative. Exp: moyenne, écart-type
+
+La commande suivante compte le nombre d'observations dans le tableau de données.
+
+```{r}
+counties_selected %>% 
+  summarise(n = n())
+```
+
+Nous pouvons calcaler plusieurs statistiques telles que la moyenne, minimum, écart-type et autres comme sur la commande suivante :
+
+```{r}
+counties_selected %>% 
+  summarise(
+    # calcule le minimum
+    min_population = min(population),
+    # calcule la moyenne
+    mean_population = mean(population),
+    # calcule le maximum
+    max_population = max(population)
+  )
+```
+
+### group_by() / ungroup()
+
+Permet de grouper un dataframe en fonction d'une variable qualitative. Cela permet d'effectuer des opérations sur ce groupe.
+
+Le groupe n'a de valeur que lorsqu'il est combiné avec d'autres verbes. Des exemples sont fournis ci-après :
+
+-   Calculer pour chaque Etat, la superficie et la population totale.
+
+```{r}
+counties_selected %>%
+  # Group by state 
+  group_by(state) %>%
+  # Find the total area and population
+  summarise(
+    total_area = sum(land_area),
+    total_population = sum(population)
+  )
+```
+
+On peut ajouter des verbes à la commande précédente pour calculer la densité et la trier par ordre décroissant.
+
+```{r}
+counties_selected %>%
+  group_by(state) %>%
+  summarize(total_area = sum(land_area),
+            total_population = sum(population)) %>%
+  mutate(density = total_population / total_area) %>%
+  arrange(desc(density))
+```
+
+-   L'Etat avec le plus faible revenu dans chaque region
+
+```{r}
+counties_selected <- counties %>%
+  select(region, state, county, population, income)
+
+counties_selected %>%
+  group_by(region, state) %>%
+  # Calculate average income
+  summarise(average_income = mean(income)) %>%
+  # Find the lowest income state in each region
+  slice_min(average_income, n = 1)
+```
+
+-   Deux Etats avec le taux de pauvreté le plus élevé dans chaque region
+
+```{r}
+counties %>% 
+  group_by(region, state) %>% 
+  summarise(average_poverty = mean(poverty)) %>% 
+  slice_max(average_poverty, n = 2)
+```
+
+```{r}
+counties %>%
+  group_by(region) %>%
+  summarise(across(ends_with("tion"), mean, .names = "mean_{.col}"))
+```
+
+### rename
+
+Permet de renommer le nom d'une colonne (variable). La syntaxe est la suivante : `rename(nouveau_nom = ancien_nom)`.
+
+```{r}
+counties_selected <- counties %>%
+  select(census_id, region, state, county, population, income)
+
+counties_selected %>% 
+  rename(id = census_id, us_state = state)
+```
+
+Si l'on désire ne garder que les colonnes rénommées, on peut utiliser `select()`.
+
+```{r}
+counties %>% 
+  select(id = census_id, us_state = state)
+```
+
+### transmute
+
+Permet de sélectionner les colonnes et d'ajouter une colonne. Cette fonction combine donc les actions de `select` + `mutate`.
+
+La commande suivante consiste à calculer une nouvelle variable, à sélectionner les varibles et à trier selon nouvelle variable créeé.
+
+```{r}
+counties %>% 
+  mutate(density = population / land_area) %>% 
+  select(state, county, population, density) %>% 
+  arrange(density)
+```
+
+Avec `transmute()`, le code précédent est réduit comme suit :
+
+```{r}
+counties %>%
+  transmute(state, county, population, density = population / land_area) %>%
+  arrange(density)
+```

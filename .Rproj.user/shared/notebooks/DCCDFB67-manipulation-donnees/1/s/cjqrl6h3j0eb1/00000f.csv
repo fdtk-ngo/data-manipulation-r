@@ -1,0 +1,5 @@
+"0","counties_selected <- counties %>%"
+"0","  select(region, state, county, public_work, population, private_work, women, citizens, work_at_home, walk, land_area)"
+"0",""
+"0","counties_selected %>%"
+"0","  arrange(public_work)"

@@ -1,0 +1,120 @@
+# Recodage de variables et mise en forme de données
+
+## Recodage de variables
+
+```{r warning=FALSE, message=FALSE, include=FALSE}
+library(tidyverse)
+counties <- readRDS("data/counties.rds")
+```
+
+Il arrive souvent que nous voulions modifier les modalités d'une variable ou créer des classes à partir d'une variable quantitative.
+
+S'il s'agit d'une condition simple, nous povons utiliser `ifelse()`. Pour des condtions longues, `cut()`, `recode()`, `case_when()` ferons l'affaire.
+
+### ifelse
+
+La commande suivante permet de créer une variable avec deux modalités sur base de la variable population.
+
+```{r}
+counties %>% 
+  mutate(population_group = ifelse(population > 25000, ">25000", "<=25000")) %>% 
+  select(population, population_group)
+```
+
+### recode
+
+Avec `recode()`, la syntaxe est la suivante : `recode(variable, "ancienne_valeur" = "nouvelle_valeur")`.
+
+```{r}
+counties %>% 
+  mutate(metro_new = recode(metro, 
+                            "Metro" = "Avec Metro", 
+                            "Nonmetro" = "Sans metro")) %>% 
+  count(metro_new)
+```
+
+### case_when
+
+`case_when()` est une une généralisation du `ifelse()` au cas où nous avons plusieurs conditions à vérifier. Nous pouvons créer une variable catégorielle à partir de la variable quantitative.
+
+```{r}
+counties %>% 
+  select(income) %>% 
+  mutate(income_cat = case_when(
+    income >= 17000 & income <= 40000 ~ "17000-40000",
+    income > 40000 & income <= 46000 ~ "40001-46000",
+    income > 46000 & income <= 50000 ~ "46001-50000",
+    TRUE ~ ">50000"
+  )) 
+```
+
+La clause TRUE \~ "\>50000" permet d'assigner une valeur à toutes les lignes pour lesquelles aucune des conditions précédentes n'est vraie.
+
+Le même résultat peut être obtenu avec `cut()`.
+
+### cut
+
+```{r}
+counties %>% 
+  select(income) %>% 
+  mutate(
+    income_cat = cut(
+      income,
+      breaks = c(17000, 40000, 46000, 50000, 150000),
+      labels = c("17000-40000", "40001-46000", "46001-50000", ">50000")
+  ))
+```
+
+L'argument `include_lowest = T` peut être ajouté à `cut()` pour inclure la valeur minimale dans la première classe.
+
+## Mettre les données en ordre (wide - long format)
+
+L'objectif du package tidyr est de fournir des fonctions pour arranger ses données et les convertir dans un format tidy. Quand est-ce que les données sont dans un format tidy ?
+
+Le concept de tidy data repose sur trois règles interdépendantes. Des données sont considérées comme tidy si :
+
+1.  chaque ligne correspond à une observation
+
+2.  chaque colonne correspond à une variable
+
+3.  chaque valeur est présente dans une unique case de la table ou, de manière équivalente, des unités d'observations différentes sont présentes dans des tables différentes
+
+```{r}
+library(tidyr)
+```
+
+```{r}
+country <- c("Belgium", "France", "Germany", "Italy", "Spain", "Switzerland")
+`2002` <- c(10311970, 59925035, 82350671, 57926999, 40152517, 7361757)
+`2007` <- c(10392226, 61083916, 82400996, 58147733, 40448191, 7554661)
+
+(df <- tibble(
+  country,
+  `2002`,
+  `2007`
+))
+```
+
+### pivot_longer : transformer des colonnes en lignes
+
+Ici nous rassemblons les colonnes `2002` et `2007` sous `year` et les différentes valeurs dans `population`.
+
+```{r}
+df_long <- df %>%
+  pivot_longer(cols = c(`2002`, `2007`), names_to = "year", values_to = "population")
+
+df_long
+```
+
+Avec l'argument `cols =` on spécifie les noms des colonnes qui deviendront des modalités de la variable dont le nom est déterminé dans `names_to =`. `values_to =` détermine la variable qui contiendra les valeurs.
+
+### pivot_wider : transformer des lignes en colonnes
+
+`pivot_wider` de réaliser l'opération inverse que `pivot_longer`.
+
+```{r}
+df_long %>% 
+  pivot_wider(names_from = "year", values_from = "population")
+```
+
+Dans `names_from =` nous indiquons la variable à partir de laquelle créer des colonnes.

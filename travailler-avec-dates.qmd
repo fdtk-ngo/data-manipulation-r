@@ -1,0 +1,156 @@
+# Travailler avec les dates
+
+Nous allons apprendre maintenant à travailler avec des dates. R dispose des package facilitant la manipulation des dates. Le plus utilisé est sans doute `lubridate`.
+
+Le package `lubridate` est une collection de fonctions pour manipuler des dates en R. Il a été développé pour simplifier le processus de transformation de dates dans le format le plus approprié pour l'analyse de données. Le package permet de facilement extraire des composantes de dates (jour, mois, année), de calculer des différences de temps entre deux dates et de convertir des dates dans différents formats.
+
+Nous utiliserons la table de données `flights` contenu dans le package `nycflights13`.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(lubridate)
+library(nycflights13)
+library(tidyverse)
+```
+
+## Créer une variable date
+
+Il y a trois types de données qui font référence à un instant dans le temps :
+
+-   date, affiché comme `<date>` dans tibble
+
+-   time, affiché comme `<time>` dans tibble
+
+-   date-time, affiché comme `<dttm>` dans tibble
+
+On peut obtenir la date actuelle avec `today()` et `now()` :
+
+```{r}
+today()
+```
+
+```{r}
+now()
+```
+
+Une variable date peut être créée à partir d'une chaîne de caractère, des composants individuels de date ou d'une autre variable date.
+
+### A partir d'une chaîne de caractère {.unnumbered}
+
+Il y a trois fonctions qui permettent de créer d'une variable date à partir d'une chaîne de caractère. Leur nom varie selon l'ordre du jour, mois et année dans la chaîne de caractère. Il s'agit de `dmy()`, `mdy()` et `ymd()`, où d, m et y représentent respectivement le jour, le mois et l'année.
+
+Un exemple est donné ci-après :
+
+```{r}
+dmy("21-08-2023")
+```
+
+```{r}
+ymd("2020-Feb-12")
+```
+
+```{r}
+mdy("July 1, 2017")
+```
+
+Pour créer une date associé au temps, il suffit d'ajouter `hms` ou `hm` où h, m et s représentent respectivement l'heure, la minute et la seconde.
+
+```{r}
+dmy_hms("21-08-2023 10-10-25")
+```
+
+```{r}
+mdy_hm("July 1, 2017 16-10")
+```
+
+Dans la pratique, on passe généralement à ces fonctions une variable contenant la chaîne de caractère qu'on souhaitre transformer en date.
+
+### A partir de composants individuels de date {.unnumbered}
+
+Au lieu d'une seule chaîne de caractère, vous aurez parfois des composants de date dans plusieurs colonnes. C'est ce que nous avons dans ces données.
+
+```{r}
+flights %>%
+select(year, month, day, hour, minute)
+```
+
+Utilisez `make_date()` pour créer une variable date et `make_datetime()` pour date-time.
+
+```{r}
+flights %>% 
+  select(year, month, day, hour, minute) %>% 
+  mutate(
+    depart = make_datetime(year, month, day, hour, minute)
+  )
+```
+
+### A partir d'une autre variable date {.unnumbered}
+
+Vous pouvez quitter d'un type date à un type date-time ou vice-versa. Deux fonctions permettent d'acomplir cela. Il s'agit de `as_datetime()` et `as_date()`.
+
+```{r}
+as_datetime(today())
+```
+
+```{r}
+as_date(now())
+```
+
+## Extraire les composants de date
+
+Il est possible de d'extraire des composants de date comme l'année (`year()`), le mois (`month()`), le jour du mois (`mday()`), le jour de l'année (`yday()`), le jour de la semaine (`wday()`), l'heure (`hour()`), la minute et la seconde `second()`.
+
+```{r}
+datetime <- dmy_hms("15-02-2023 14:25:02")
+```
+
+```{r}
+year(datetime)
+```
+
+```{r}
+month(datetime)
+```
+
+```{r}
+yday(datetime)
+```
+
+```{r}
+mday(datetime)
+```
+
+```{r}
+wday(datetime)
+```
+
+```{r}
+hour(datetime)
+```
+
+`month()` et `wday()` dispose de `label =` et `abbr =`. `label = TRUE` permet d'obtenir des noms abbrégés de mois ou de jour au lieu de nombre, et `abbr = FALSE` permet d'obtenir les noms complets au lieu des abbrégés.
+
+```{r}
+month(datetime, label = T, abbr = F)
+```
+
+```{r}
+wday(datetime, label = T, abbr = F)
+```
+
+## Calculer la durée entre deux dates
+
+```{r}
+age <- today() - dmy("25-05-1999")
+age
+class(age)
+```
+
+Quand vous effectuez ce calcul, vous obtenez un objet de type `difftime`. Le problème avec `difftime` est qu'il donne le résulat avec différentes unités (seconde, minutes, ...). Pour résoudre ce problème, vous pouvez utiliser la fonction `as.duration()` pour convertir la valeur en seconde. Et pour pouvoir effectuer des calculs, vous pouvez convertir le résultat de `as.duration()` en numérique avec la fonction `as.numeric()`.
+
+```{r}
+as.duration(age)
+
+as.numeric(as.duration(age))
+```
+
+Vous pouvez alors convertir cette valeur en n'importe quelle unité en considérant q'une minute correspond à 60 secondes.

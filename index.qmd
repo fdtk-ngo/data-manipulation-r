@@ -1,0 +1,56 @@
+# Avant propos {.unnumbered}
+
+Ce document est un manuel de formation sur la manipulation de données avec R dispensée par [fdtk](https://fdtk.org). Il a pour but de fournir aux apprenants un document auquel ils pourront se référer pour avoir plus de détail sur le contenu de la formation.
+
+Cette formation est conçue pour vous donner les outils nécessaires pour maîtriser les compétences de manipulation de données avec R. Il commence par une introduction aux logiciels, les techniques de l'importation et de manipulation de données, notamment la manipulation de tableaux de données, le filtrage et le tri, les jointures, mais aussi la manipulation des bases de données relationnelles et la gestion des dates.
+
+Il est organisé en 7 chapitres/modules permettant d'aquérrir des compétances en manipulation de données avec le langage de programmation R.
+
+## Contenu...
+
+Le premier chapitre donne une introduction au langage R et à RStudio, en explorant les notions bases comme les structures de données et  différents panneaux de l'interface de RStudio.
+
+Le deuxième porte sur le l'importation et l'exportation de données dans R. Il fournit les fonctions les plus utilisées pour importer et exporter vos données vers différents programmes. Il montre également comment accéder aux données se trouvant dans une base de données comme SQLite ou en ligne.
+
+Le troisième chapitre nous plonge au coeur du package `dplyr` qui est l'un de plus utilisés pour manipuler les données. 
+
+Le quatrième chapitre présente les techniques permettant de recoder et mettre en forme de données, les préparant ainsi pour les analyses.
+
+Le cinquième chapitre se penche sur le problème de doublons. Il montre comment détecter et supprimer les doublons pour rendre ainsi vous données propres.
+
+Le sixième chapitre nous introduit dans le monde de base de données relationnelles en montrant comment travailler avec plusieurs tableaux de données. Il explore les différents types de jointures pour tirer prorit de vos données.
+
+Le dernier chapitre décrit les différentes fonctions du package `lubridate` qui permet de travailler avec les données. Il montre différentes opérations courantes à effectuer sur les dates. 
+
+## Ce que vous serez capable de faire à la fin de cette formation
+
+A la fin de cette formation, vous serez capables de :
+
+-   télécharger des librairies dans R via RStudio,
+-   écrire des scripts claires,
+-   Importer et exporter les données de différents formats,
+-   maîtriser les différentes fonctions du package dplyr,
+-   recoder les données et les mettre en forme,
+-   détecter et supprimer les doublons,
+-   travailler efficacement avec les bases de données relationnelles,
+-   travailler efficacement avec des dates.
+
+Bref , cette formation vous permettra de devenir autonome dans la manipulation de données avec R et gagner en productivité.
+
+## Cible
+
+Cette formation s'adresse à toutes les personnes qui sont confrontées à manipuler quotidiennement des données dans le cadre de leur taravail et à toute personne désireuse d'acquérir des compétences en manipulation de données statistiques avec R. Si vous chercher à automatiser votre travail de manipulation de données, cette formation est faite pour vous. 
+
+## Préréquis
+
+-   Capable de créer, copier, coller des dossiers ou fichiers,
+-   être prêt à apprendre à écrire des lignes de code,
+
+## Différentes débouchées
+
+Avec les compétences acquises au cours de cette formation, vous maximiserez vos chances de travailler pour des postes d'Assistant Suivi-Evaluation, gestionnaire de base de données, Analyste de données, data scientist, statisticien,... 
+
+## Matériel et logiciel requis
+
+-   Ordinateur portable (les logiciels seront installés sur place)
+

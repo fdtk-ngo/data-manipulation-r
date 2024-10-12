@@ -1,0 +1,25 @@
+project:
+  type: book
+
+book:
+  title: "Manipulation de données avec R"
+  author: "FDTK"
+  date: "21/03/2023"
+  chapters:
+    - index.qmd
+    - introduction.qmd
+    - import-export-donnees.qmd
+    - manipulation-donnees.qmd
+    - recoder.qmd
+    - doublons.qmd    
+    - plusieurs-tables.qmd
+    - travailler-avec-dates.qmd
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+

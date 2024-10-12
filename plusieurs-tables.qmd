@@ -1,0 +1,109 @@
+# Combiner plusieurs tableaux de données
+
+```{r warning=FALSE, message=FALSE, include=FALSE}
+library(tidyverse)
+library(tibble)
+```
+
+Souvent, l'analyse de données implique plusieurs jeux de données reliés, au lieu d'un seul. Ces différents jeux de données doivent être combinés pour pouvoir répondre à la question qui vous intéresse. Les différentes tables de données liées forment ce qu'on appelle une base de données relationnelles.
+
+Pour pouvoir relier les différents tables de données, ces dernières doivent posséder des clés (keys) permettant d'établir ce lien. Une clé identifie une observation de façon unique.
+
+Il y a deux types de clés :
+
+-   clé primaire : identifie une observation de façon unique dans sa propre table.
+
+-   clé étrangère : identifie une observation dans une autre table.
+
+Par exemple, dans les enquêtes du type EDS, nous pouvons avoir une table de données de ménage et une table de données des femmes. Le numéro du ménage dans la table ménage constitue la clé primaire. Dans la table de données des femmes, ce même numéro constitue une clé étrangère.
+
+Nous allons utiliser deux tables de données (`personnes` et `voitures`) pour illustrer l'utilisation des jointures.
+
+```{r}
+personnes <- tibble(
+  nom = c("Sylvie", "Sylvie", "Monique", "Gunter", "Rayan", "Rayan"),
+  voiture = c("Twingo", "Ferrari", "Scenic", "Lada", "Twingo", "Clio")
+)
+
+voitures <- tibble(
+  voiture = c("Twingo", "Ferrari", "Clio", "Lada", "208"),
+  vitesse = c("140", "280", "160", "85", "160")
+)
+
+personnes
+
+voitures
+```
+
+## inner_join
+
+Retourne uniquement les lignes présentes dans les deux tables.
+
+![inner_join](images/inner.PNG){fig-align="center"}
+
+Lorsque les clés portent le même nom, il n'est important de préciser cette variable dans l'appel de la fonction. Mais lorsque les clés ont des noms différents, il devient alors obligatoire de préciser les noms des variables clés avec l'argument `by = c("cle_x" = "cle_y")` au sein de la fonction de jointure.
+
+```{r}
+personnes %>% inner_join(voitures)
+```
+
+En précisant explicitement la clé :
+
+```{r eval=FALSE}
+personnes %>% inner_join(voitures, by = c("voiture" = "voiture"))
+```
+
+## left_join
+
+Donne toutes les lignes de la première table avec les lignes de la deuxième table si elles ont une clé correspondante. Les lignes de la première table sans correspondance dans la deuxième auront des 'NA'. Les lignes de la deuxième table sans correspondance avec la première seront supprimées. L'image ci-après illustre le fonctionnement de `left_join()`.
+
+![left_join](images/left.PNG){fig-align="center"}
+
+```{r}
+personnes %>% left_join(voitures)
+```
+
+## right_join
+
+`right_join()` est juste l'opposé de `left_join()`. Donne toutes les lignes de la deuxième table avec les lignes de la première table si elles ont une clé correspondante. Les lignes de la deuxième table sans correspondance dans la première auront des 'NA'. Les lignes de la première table sans correspondance avec la deuxième seront supprimées comme le montre l'image suivante.
+
+![right_join](images/right.PNG){fig-align="center"}
+
+```{r}
+personnes %>% right_join(voitures)
+```
+
+## full_join
+
+![full_join](images/full.PNG){fig-align="center"}
+
+```{r}
+personnes %>% full_join(voitures)
+```
+
+Retourne toutes les lignes de deux tables, même si elles ne sont pas disponibles dans l'une ou l'autre table.
+
+------------------------------------------------------------------------
+
+L'image suivante donne un rsumé de différentes jointures mutate (qui ajoutent des colonnes) sous forme de diagramme de Venn.
+
+\
+![diagramme de venn](images/venn-dia.PNG){fig-align="center"}
+
+Contrairement aux jointures vues jusqu'ici, celles qui suivent n'ajoutent pas de colonnes (variables) à la première table de données. On les qualifie de jointures filtrantes.
+
+## semi_join
+
+Retourne les lignes de la première table qui ont des correspondances dans la deuxième table, sans ajouter les colonnes de cette dernière.
+
+```{r}
+personnes %>% semi_join(voitures)
+```
+
+## anti_join
+
+Retourne les lignes de la première table qui n'ont pas de correspondances dans la deuxième table, sans ajouter les colonnes de cette dernière.
+
+```{r}
+personnes %>% anti_join(voitures)
+```

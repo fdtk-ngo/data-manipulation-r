@@ -1,0 +1,4 @@
+"0","connexion <- dbConnect(SQLite(), dbname = ""data/db.sqlite"")"
+"2","Error in dbConnect(SQLite(), dbname = ""data/db.sqlite"") : 
+  could not find function ""dbConnect""
+"

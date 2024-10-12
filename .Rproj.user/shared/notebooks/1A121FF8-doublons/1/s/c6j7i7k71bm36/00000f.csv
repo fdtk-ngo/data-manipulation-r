@@ -1,0 +1,6 @@
+"0","(df <- data.frame(Prenom   = c(rep('Jean',3), rep(""Alain"", 2)),  "
+"0","                  Activite = c(rep('Foot',3), rep(""Danse"", 2)), "
+"0","                  Lieu     = c(rep('Kinshasa',3), rep(""Goma"", 2)), "
+"0","                  Date     = as.Date(c(""2023-05-12"", ""2023-05-16"", ""2023-05-14"", ""2023-05-13"", ""2023-05-13""))"
+"0","                  )"
+"0"," )"

@@ -1,0 +1,4 @@
+"0","df <-  read.csv(""Base_Femme_cesarise.csv"", sep = "";"")"
+"0","df$Sexe<-factor(df$Sexe)"
+"0","df$Etude<-factor(df$Etude)"
+"0","df$Taille <- as.numeric(df$Taille)"

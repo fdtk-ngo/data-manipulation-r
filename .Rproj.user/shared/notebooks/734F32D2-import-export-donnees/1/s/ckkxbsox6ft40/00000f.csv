@@ -1,0 +1,4 @@
+"0","connexion <- DBI::dbConnect(RSQLite::SQLite(), dbname = ""data/db.sqlite"")"
+"0","dbWriteTable(connexion, ""iris_info"", iris)"
+"2","Error: Table iris_info exists in database, and both overwrite and append are FALSE
+"

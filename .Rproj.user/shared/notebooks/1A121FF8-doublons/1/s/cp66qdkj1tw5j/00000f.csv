@@ -1,0 +1,7 @@
+"0","telco <-  haven::read_sav(""data/telco_missing.sav"")"
+"0","dim(telco)"
+"1","[1]"
+"1"," 1000"
+"1","   30"
+"1","
+"

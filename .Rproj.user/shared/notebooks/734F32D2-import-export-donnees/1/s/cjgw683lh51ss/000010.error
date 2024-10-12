@@ -1,0 +1,1 @@
+{"frames":[],"message":"Error in dbConnect(SQLite(), dbname = \"data/db.sqlite\") : \n  could not find function \"dbConnect\"\n"}

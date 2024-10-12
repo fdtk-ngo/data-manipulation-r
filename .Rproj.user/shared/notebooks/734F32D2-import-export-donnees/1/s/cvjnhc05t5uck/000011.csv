@@ -1,0 +1,1 @@
+"0","connexion <- dbConnect(SQLite(), dbname = ""data/db.sqlite"")"

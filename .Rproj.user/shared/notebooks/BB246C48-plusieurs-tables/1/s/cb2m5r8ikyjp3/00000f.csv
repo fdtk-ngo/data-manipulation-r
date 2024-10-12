@@ -1,0 +1,7 @@
+"0","personnes <- tibble("
+"0","  nom = c(""Sylvie"", ""Sylvie"", ""Monique"", ""Gunter"", ""Rayan"", ""Rayan""),"
+"0","  voiture = c(""Twingo"", ""Ferrari"", ""Scenic"", ""Lada"", ""Twingo"", ""Clio"")"
+"0",")"
+"2","Error in tibble(nom = c(""Sylvie"", ""Sylvie"", ""Monique"", ""Gunter"", ""Rayan"",  : 
+  could not find function ""tibble""
+"

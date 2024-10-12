@@ -1,0 +1,4 @@
+"0","df %>% "
+"0","  group_by(Prenom, Activite, Lieu) %>% "
+"0","  arrange(Date) %>% "
+"0","  distinct(Prenom, Activite, Lieu, .keep_all = T)"
